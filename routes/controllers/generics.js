@@ -1,5 +1,6 @@
 const createError = require("http-errors");
 const lodash = require("lodash");
+const { errorHandler } = require("../../util");
 
 //mediante un closure de una funcion, podemos recortar la redaccion de features
 /* closureList es una funcion que obtiene la entidad
@@ -66,8 +67,7 @@ const createEntity = function closureCreateEntity({ Model = null }) {
       await entity.save();
       return res.status(200).json(entity);
     } catch (error) {
-      const err = new createError[500]();
-      return next(err);
+      return errorHandler({ error, next });
     }
   };
 };
