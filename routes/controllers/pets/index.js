@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const Pet = require("./schema");
-const Owner = require("../owners/schema");
+const User = require("../users/schema");
 const createError = require("http-errors");
 const {
   create,
@@ -20,7 +20,7 @@ const entityRoute = "/";
 //y ya cuando queramos crear el enrutador de metodo listar, solo llamamos a la variable anterior y le damos la ruta de entidad
 //correspondiente, en este caso, mascotas (pets)
 //listar mascotas
-const listHandler = list({ Model: Pet, populate: ["owner"] });
+const listHandler = list({ Model: Pet, populate: [{path: "owner", select: "firstName lastName entityDocument role email" }] });
 router.get(entityRoute, listHandler);
 
 //obtener una sola mascota sigue el mismo metodo que en listar todas las mascotas (anterior)
@@ -30,9 +30,9 @@ router.get(`${entityRoute}:_id`, getOneHandler);
 
 //crear mascotas
 const createHandler = create({ Model: Pet });
-router.post(entityRoute, async (req, res) => {
+router.post(entityRoute, async (req, res, next) => {
   const { owner = null } = req.body;
-  const ownerExists = await Owner.exists({ _id: owner });
+  const ownerExists = await User.exists({ _id: owner, role: "owner" });
   if (ownerExists) {
     return createHandler(req, res);
   }

@@ -48,10 +48,10 @@ router.get(`${entityRoute}:_id`, async (req, res, next) => {
     }
   });
 
-//crear dueños
+//crear usuarios
 const middlewareDocumentExists = documentExists({
   Model: User,
-  fields: ["entityDocument"],
+  fields: ["entityDocument", "email"],
 });
 router.post(entityRoute, middlewareDocumentExists, async (req, res, next) => {
   try {

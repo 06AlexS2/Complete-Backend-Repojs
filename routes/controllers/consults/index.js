@@ -1,11 +1,13 @@
 const router = require("express").Router();
 const Consult = require("./schema");
-const Vet = require("../vets/schema");
+const User = require("../users/schema");
 const Pet = require("../pets/schema");
 const createError = require("http-errors");
 
 const {
-  create, list, getOne,
+  create,
+  list,
+  getOne,
   update,
   erase,
   filterEntities,
@@ -20,20 +22,26 @@ const entityRoute = "/";
 //y ya cuando queramos crear el enrutador de metodo listar, solo llamamos a la variable anterior y le damos la ruta de entidad
 //correspondiente, en este caso, consultas (consults)
 //listar consultas
-const listHandler = list({Model: Consult, populate: ["pet", "vet"]});
+const listHandler = list({
+  Model: Consult,
+  populate: [
+    "pet",
+    { path: "vet", select: "firstName lastName entityDocument role email" },
+  ],
+});
 router.get(entityRoute, listHandler);
 
 //obtener una sola consulta sigue el mismo metodo que en listar todas (anterior)
-const getOneHandler = getOne({Model: Consult});
+const getOneHandler = getOne({ Model: Consult });
 router.get(`${entityRoute}:_id`, getOneHandler);
 
 //crear consultas
-const createHandler = create({Model: Consult});
-router.post(entityRoute, async (req, res) => {
-  const {pet = null, vet = null} = req.body;
-  const vetExists = await Vet.exists({_id: vet});
-  const petExists = await Pet.exists({_id: pet});
-  if(vetExists && petExists) {
+const createHandler = create({ Model: Consult });
+router.post(entityRoute, async (req, res, next) => {
+  const { pet = null, vet = null } = req.body;
+  const vetExists = await User.exists({ _id: vet, role: "vet" });
+  const petExists = await Pet.exists({ _id: pet });
+  if (vetExists && petExists) {
     //este ya tiene el response ahi, con este objeto que le pasamos se encarga de devolver la respuesta
     return createHandler(req, res);
   }
@@ -52,7 +60,7 @@ router.post(entityRoute, async (req, res) => {
 });
 
 //editar consultas
-const updateHandler = update({Model: Consult});
+const updateHandler = update({ Model: Consult });
 router.put(`${entityRoute}:_id`, updateHandler);
 
 //eliminar consultas

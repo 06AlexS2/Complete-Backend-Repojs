@@ -13,7 +13,7 @@ const petSchema = new Schema(
     },
     owner: {
       type: "ObjectId",
-      ref: "owners",
+      ref: "users",
       required: true,
     },
   },

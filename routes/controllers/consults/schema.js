@@ -13,7 +13,7 @@ const consultSchema = new Schema(
     },
     vet: {
       type: "ObjectId",
-      ref: "vets",
+      ref: "users",
       required: true,
     },
     record: {

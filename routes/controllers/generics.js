@@ -169,47 +169,24 @@ const documentExists = function closureDocumentExists({
       }
       //validemos si dentro de req.body existe un campo a llenar y no esta vacio
       if (req.body && Array.isArray(fields) && fields.length) {
-        const queryExists = fields.reduce((accumulator, currentProp) => {
-          if (typeof currentProp === "string") {
-            if (currentProp === "_id") {
-              accumulator = {
-                ...accumulator,
-                [currentProp]: req.params[currentProp],
-              };
-            } else {
-              accumulator = {
-                ...accumulator,
-                [currentProp]: req.body[currentProp],
-              };
-            }
+        let sameEntityFieldExists = false;
+        let field = null;
+        for (field of fields) {
+          //un objeto que tenga como llave el campo y que este sea igual a lo que hay en req.body en la posicion campo (field)
+          sameEntityFieldExists = await Model.exists({
+            [field]: req.body[field],
+          });
+          if(sameEntityFieldExists) {
+            break;
           }
-          if (typeof currentProp === "object" && !Array.isArray(currentProp)) {
-            const { operator = null, entName = null } = currentProp;
-            if (operator && entName) {
-              if (entName === "_id") {
-                accumulator = {
-                  ...accumulator,
-                  [entName]: { [operator]: req.params[entName] },
-                };
-              } else {
-                accumulator = {
-                  ...accumulator,
-                  [entName]: { [operator]: req.body[entName] },
-                };
-              }
-            }
-          }
-          return accumulator;
-        }, {});
+        }
+        console.log({ field, sameEntityFieldExists, value: req.body[field] });
 
-        console.log({ queryExists });
+        //verificar por separado si existe documento o si existe email, no la combinación de ambos
 
-        const sameLicenseEntityExists = await Model.exists(queryExists);
-        if (sameLicenseEntityExists) {
+        if (sameEntityFieldExists) {
           const err = new createError[409](
-            `entity ${JSON.stringify(
-              req.body
-            )} has fields that forbid duplicate`
+            ` field ${field} with value ${req.body[field]} already exists!`
           );
           return next(err);
         }
