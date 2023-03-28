@@ -1,0 +1,33 @@
+{
+  "name": "express-node-react",
+  "version": "1.0.0",
+  "description": "fullstack javascript dev proyect",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/06AlexS2/proto-express-mongodb-fsjs.git"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "fullstack",
+    "javascript"
+  ],
+  "author": "sanchez.alejandro0603@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/06AlexS2/proto-express-mongodb-fsjs/issues"
+  },
+  "homepage": "https://github.com/06AlexS2/proto-express-mongodb-fsjs#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "http-errors": "^2.0.0",
+    "mongoose": "^7.0.2",
+    "nodemon": "^2.0.21",
+    "uuid": "^9.0.0"
+  }
+}
