@@ -31,7 +31,7 @@ router.post(entityRoute, async (req, res, next) => {
         //removemos el password del resto de datos de usuario para evitar filtraciones
         const { password, ...userData } = user;
         //creamos un token con base en el secret key que nosotros creamos, y le damos expiracion de 5 minutos
-        const token = jwt.sign(userData, SECRET_KEY, { expiresIn: 5 * 60 });
+        const token = jwt.sign(userData, SECRET_KEY, { expiresIn: 60 * 60 });
         //y enviamos la respuesta con el token generado y el resto de datos de usuario sin la contraseña
         const response = { token, user: userData };
         return res.status(200).json(response);

@@ -38,7 +38,7 @@ const removePassword = (object) => {
 const isAuthenticated = (req, res, next) => {
   //si authorization existe en los headers a través del request lo guarda en auth, si no lo pone null
   let auth = lodash.get(req, "headers.authorization", null);
-  if (!auth && auth.length) {
+  if (!auth && !auth.length) {
     const err = new createError.Unauthorized("missing token.");
     return next(err);
   }

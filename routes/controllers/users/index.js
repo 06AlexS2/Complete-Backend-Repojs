@@ -2,6 +2,7 @@ const router = require("express").Router();
 const User = require("./schema");
 const { errorHandler, removePassword } = require("../../../util");
 const createError = require("http-errors");
+const bcrypt = require("bcrypt");
 
 const { erase, documentExists, filterEntities } = require("../generics");
 const { default: mongoose } = require("mongoose");
@@ -14,7 +15,7 @@ const entityRoute = "/";
 
 //y ya cuando queramos crear el enrutador de metodo listar, solo llamamos a la variable anterior y le damos la ruta de entidad
 //correspondiente, en este caso, mascotas (owners)
-//listar dueños
+//listar usuarios
 router.get(entityRoute, async (req, res, next) => {
   try {
     const { user = null } = req;
@@ -29,7 +30,7 @@ router.get(entityRoute, async (req, res, next) => {
   }
 });
 
-//obtener un solo duño sigue el mismo metodo que en listar todos los dueños (anterior)
+//obtener un solo usuario sigue el mismo metodo que en listar todos los dueños (anterior)
 router.get(`${entityRoute}:_id`, async (req, res, next) => {
   try {
     const { _id } = req.params;
@@ -60,7 +61,15 @@ router.post(entityRoute, middlewareDocumentExists, async (req, res, next) => {
       let err = new createError[400]("Missing body");
       return next(err);
     }
-    const { _id, ...remainingEntityData } = req.body;
+    //crear y encriptar password con bcrypt
+    let { _id, password = null, ...remainingEntityData } = req.body;
+    //si se crea password y el campo no está vacio
+    if (password && password.length) {
+      //con hashSync encriptamos la contraseña, y para ello usamos 8 rondas de encriptación
+      password = bcrypt.hashSync(password, 8);
+      remainingEntityData = { ...remainingEntityData, password };
+    }
+    console.log(JSON.stringify({ remainingEntityData }, null, 2));
     let user = new User(remainingEntityData);
     await user.save();
     user = removePassword(user);
@@ -70,18 +79,17 @@ router.post(entityRoute, middlewareDocumentExists, async (req, res, next) => {
   }
 });
 
-//editar dueños
+//editar usuarios
 const middlewareVerifyDocument = documentExists({
   Model: User,
   fields: ["entityDocument", { operator: "$ne", entName: "_id" }],
 });
 router.put(
   `${entityRoute}:_id`,
-  middlewareVerifyDocument,
   async (req, res, next) => {
     try {
       const { _id = null } = req.params;
-      const { _id: id, ...newData } = req.body;
+      let { _id: id, password = null, ...newData } = req.body;
       if (!_id) {
         let err = new createError[400]("Missing _id");
         return next(err);
@@ -90,6 +98,12 @@ router.put(
       if (!user) {
         let err = new createError[404]();
         return next(err);
+      }
+      //si se crea password y el campo no está vacio
+      if (password && password.length) {
+        //con hashSync encriptamos la contraseña, y para ello usamos 8 rondas de encriptación
+        password = bcrypt.hashSync(password, 8);
+        newData = { ...newData, password, _id };
       }
       user.set(newData);
       await user.save();
@@ -110,7 +124,7 @@ router.put(
   }
 );
 
-//eliminar dueños
+//eliminar usuarios
 const deleteHandler = erase({ Model: User });
 router.delete(`${entityRoute}:_id`, deleteHandler);
 
