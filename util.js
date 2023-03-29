@@ -55,8 +55,18 @@ const isAuthenticated = (req, res, next) => {
   });
 };
 
+const jwtSignPromise = ({data = null, secret = null, options = {}}) => new Promise((resolve, reject) => {
+  if(!data || !secret) return reject(new Error("incomplete jwt"));
+  jwt.sign(data, secret, options, (err, token) => {
+    if (err) return reject(new Error(err));
+    //y enviamos la respuesta con el token generado y el resto de datos de usuario sin la contraseña
+    return resolve(token);
+  });
+});
+
 module.exports = {
     errorHandler,
     removePassword,
     isAuthenticated,
+    jwtSignPromise,
 }

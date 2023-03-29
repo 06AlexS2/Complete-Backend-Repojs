@@ -6,7 +6,7 @@ const SECRET_KEY = process.env.SECRET_KEY;
 const bcrypt = require("bcrypt");
 
 const { default: mongoose } = require("mongoose");
-const { errorHandler } = require("../../../util");
+const { errorHandler, jwtSignPromise } = require("../../../util");
 
 const entityRoute = "/";
 
@@ -31,13 +31,14 @@ router.post(entityRoute, async (req, res, next) => {
         user = user.toJSON();
         //removemos el password del resto de datos de usuario para evitar filtraciones
         const { password, ...userData } = user;
-        //creamos un token con base en el secret key que nosotros creamos, y le damos expiracion de 5 minutos
-        return jwt.sign(userData, SECRET_KEY, { expiresIn: 60 * 60 }, (err, token) => {
-          if (err) throw err;
-          //y enviamos la respuesta con el token generado y el resto de datos de usuario sin la contraseña
-          const response = { token, user: userData };
-          return res.status(200).json(response);
+        const token = await jwtSignPromise({
+          data: userData,
+          secret: SECRET_KEY,
+          options: { expiresIn: 60 * 60 },
         });
+        //y enviamos la respuesta con el token generado y el resto de datos de usuario sin la contraseña
+        const response = { token, user: userData };
+        return res.status(200).json(response);
       }
       return next(err);
     }
