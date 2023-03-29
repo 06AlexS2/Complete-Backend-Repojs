@@ -3,11 +3,7 @@ const User = require("./schema");
 const { errorHandler, removePassword } = require("../../../util");
 const createError = require("http-errors");
 
-const {
-  erase,
-  documentExists,
-  filterEntities
-} = require("../generics");
+const { erase, documentExists, filterEntities } = require("../generics");
 const { default: mongoose } = require("mongoose");
 
 const entityRoute = "/";
@@ -20,33 +16,35 @@ const entityRoute = "/";
 //correspondiente, en este caso, mascotas (owners)
 //listar dueños
 router.get(entityRoute, async (req, res, next) => {
-    try {
-      const filter = filterEntities(User, req.query);
-      let result = await User.find(filter);
-      result = result.map(removePassword);
-      return res.status(200).json(result);
-    } catch (error) {
-      const err = new createError[500]();
-      return next(err);
-    }
-  });
+  try {
+    const { user = null } = req;
+    console.log({ user });
+    const filter = filterEntities(User, req.query);
+    let result = await User.find(filter);
+    result = result.map(removePassword);
+    return res.status(200).json(result);
+  } catch (error) {
+    const err = new createError[500]();
+    return next(err);
+  }
+});
 
 //obtener un solo duño sigue el mismo metodo que en listar todos los dueños (anterior)
 router.get(`${entityRoute}:_id`, async (req, res, next) => {
-    try {
-      const { _id } = req.params;
-      let user = await User.findById(_id);
-      if (user) {
-        user = removePassword(user);
-        return res.status(200).json(user);
-      }
-      let err = new createError[404]();
-      return next(err);
-    } catch (error) {
-      let err = new createError[500]();
-      return next(err);
+  try {
+    const { _id } = req.params;
+    let user = await User.findById(_id);
+    if (user) {
+      user = removePassword(user);
+      return res.status(200).json(user);
     }
-  });
+    let err = new createError[404]();
+    return next(err);
+  } catch (error) {
+    let err = new createError[500]();
+    return next(err);
+  }
+});
 
 //crear usuarios
 const middlewareDocumentExists = documentExists({
