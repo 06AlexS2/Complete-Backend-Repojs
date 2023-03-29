@@ -66,7 +66,7 @@ router.post(entityRoute, middlewareDocumentExists, async (req, res, next) => {
     //si se crea password y el campo no está vacio
     if (password && password.length) {
       //con hashSync encriptamos la contraseña, y para ello usamos 8 rondas de encriptación
-      password = bcrypt.hashSync(password, 8);
+      password = await bcrypt.hash(password, 8);
       remainingEntityData = { ...remainingEntityData, password };
     }
     console.log(JSON.stringify({ remainingEntityData }, null, 2));
@@ -102,7 +102,7 @@ router.put(
       //si se crea password y el campo no está vacio
       if (password && password.length) {
         //con hashSync encriptamos la contraseña, y para ello usamos 8 rondas de encriptación
-        password = bcrypt.hashSync(password, 8);
+        password = await bcrypt.hash(password, 8);
         newData = { ...newData, password, _id };
       }
       user.set(newData);
