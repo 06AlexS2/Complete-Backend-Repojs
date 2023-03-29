@@ -3,6 +3,7 @@ const User = require("../users/schema");
 const jwt = require("jsonwebtoken");
 const createError = require("http-errors");
 const SECRET_KEY = process.env.SECRET_KEY;
+const bcrypt = require("bcrypt");
 
 const { default: mongoose } = require("mongoose");
 const { errorHandler } = require("../../../util");
@@ -17,14 +18,14 @@ router.post(entityRoute, async (req, res, next) => {
     let err = new createError[400]("wrong email or password");
     //si ambos campos llegan al body del request
     if (password && password.length > 0 && email && email.length > 0) {
-        //busca un usuario que contenga los campos del body
+      //busca un usuario que contenga los campos del body
       let user = await User.findOne({ email });
       //si no hay usuario que haga match con esos campos, tira error y detiene el request
       if (!user) {
         return next(err);
       }
-      //si existen los campos y la contraseña fue correcta
-      if (user.password === password) {
+      const isPasswordValid = bcrypt.compareSync(password, user.password);
+      if (isPasswordValid === true) {
         //logica para cuando el usuario hizo inicio de sesion correctamente
         //volver el usuario plano con toJSON
         user = user.toJSON();
